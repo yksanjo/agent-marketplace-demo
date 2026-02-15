@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgentHub - AI Agent Marketplace Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #0a0a0f;
+      color: #f0f0f5;
+      min-height: 100vh;
+    }
+    .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      background: rgba(10, 10, 15, 0.8);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid #2a2a3e;
+    }
+    .logo { font-size: 24px; font-weight: 700; font-family: 'Outfit', sans-serif; }
+    .logo span { background: linear-gradient(135deg, #00d4aa 0%, #7c3aed 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    h1 { font-family: 'Outfit', sans-serif; font-size: 48px; margin: 48px 0 24px; text-align: center; background: linear-gradient(135deg, #00d4aa 0%, #7c3aed 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { text-align: center; color: #8888a0; margin-bottom: 48px; font-size: 18px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+    .card {
+      background: #1a1a2e;
+      border: 1px solid #2a2a3e;
+      border-radius: 16px;
+      padding: 24px;
+      transition: all 0.3s ease;
+    }
+    .card:hover { transform: translateY(-4px); border-color: #00d4aa; box-shadow: 0 0 20px rgba(0, 212, 170, 0.3); }
+    .card-header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+    .card-icon { font-size: 40px; }
+    .card-title { font-size: 18px; font-weight: 600; }
+    .card-vendor { font-size: 14px; color: #8888a0; }
+    .card-category {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(124, 58, 237, 0.2);
+      color: #7c3aed;
+      border-radius: 12px;
+      font-size: 12px;
+      margin-bottom: 12px;
+    }
+    .card-desc { font-size: 14px; color: #8888a0; margin-bottom: 16px; line-height: 1.6; }
+    .card-footer { display: flex; justify-content: space-between; align-items: center; }
+    .rating { color: #fbbf24; }
+    .price { font-weight: 600; }
+    .price.free { color: #22c55e; }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #00d4aa 0%, #7c3aed 100%);
+      color: #0a0a0f;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      margin-top: 16px;
+    }
+    .btn:hover { transform: scale(1.02); }
+    footer { text-align: center; padding: 48px; color: #8888a0; border-top: 1px solid #2a2a3e; margin-top: 64px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">🤖 <span>AgentHub</span></div>
+  </header>
+  
+  <div class="container">
+    <h1>Discover & Deploy AI Agents</h1>
+    <p class="subtitle">Browse our collection of AI agents and deploy them with one click</p>
+    
+    <div class="grid" id="agents"></div>
+  </div>
+  
+  <footer>
+    <p>© 2026 AgentHub. Demo Version.</p>
+  </footer>
+
+  <script>
+    const API = 'http://localhost:3001/api';
+    
+    async function loadAgents() {
+      try {
+        const res = await fetch(API + '/agents');
+        const agents = await res.json();
+        const grid = document.getElementById('agents');
+        
+        grid.innerHTML = agents.map(agent => `
+          <div class="card">
+            <div class="card-header">
+              <span class="card-icon">${agent.icon}</span>
+              <div>
+                <div class="card-title">${agent.name}</div>
+                <div class="card-vendor">${agent.vendor}</div>
+              </div>
+            </div>
+            <span class="card-category">${agent.category}</span>
+            <p class="card-desc">${agent.description}</p>
+            <div class="card-footer">
+              <span class="rating">${'★'.repeat(Math.floor(agent.rating))} ${agent.rating}</span>
+              <span class="price ${agent.price === 0 ? 'free' : ''}">${agent.price === 0 ? 'Free' : '$' + agent.price + '/mo'}</span>
+            </div>
+            <button class="btn" onclick="deploy('${agent.id}')">Deploy</button>
+          </div>
+        `).join('');
+      } catch (e) {
+        document.getElementById('agents').innerHTML = '<p style="color:#ef4444;text-align:center;">Failed to load agents. Make sure the API is running on port 3001.</p>';
+      }
+    }
+    
+    async function deploy(id) {
+      try {
+        await fetch(API + '/deploy', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ agentId: id })
+        });
+        alert('Agent deployed successfully!');
+      } catch (e) {
+        alert('Failed to deploy');
+      }
+    }
+    
+    loadAgents();
+  </script>
+</body>
+</html>
